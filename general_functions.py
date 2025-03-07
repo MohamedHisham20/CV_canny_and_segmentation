@@ -44,3 +44,13 @@ def reset_image(self):
 
     self.modified_image = self.image.copy()
     self.show_image()
+
+def convert_to_grey(self):
+    if self.modified_image is None:
+        return
+
+    if self.modified_image.shape == 2:
+        return
+    grey_image = cv2.cvtColor(self.modified_image, cv2.COLOR_RGB2GRAY)
+    self.modified_image = cv2.cvtColor(grey_image, cv2.COLOR_GRAY2RGB)
+    self.show_image()
