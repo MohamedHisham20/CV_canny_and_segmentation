@@ -55,43 +55,17 @@ class CannyEdgeDetection(QWidget):
         self.setLayout(main_layout)
 
     def load_image(self):
-        filename, _ = QFileDialog.getOpenFileName(
-            self, "Open Image File", "", "Image Files (*.png *.jpg *.jpeg *.bmp)"
-        )
-        if filename:
-            self.image = cv2.imread(filename)
-            self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-            self.modified_image = self.image.copy()
-            self.display_image(self.image)
-            self.original_pixmap = self.image_label.pixmap()
-
-    def display_image(self, image):
-        if image is not None:
-            height, width = image.shape[:2]
-            if len(image.shape) == 3:  # Color image
-                bytes_per_line = 3 * width
-                q_img = QImage(image.data, width, height, bytes_per_line, QImage.Format_RGB888)
-            else:  # Grayscale image
-                q_img = QImage(image.data, width, height, width, QImage.Format_Grayscale8)
-
-            pixmap = QPixmap.fromImage(q_img)
-            self.image_label.setPixmap(pixmap.scaled(
-                self.image_label.width(), self.image_label.height(),
-                Qt.KeepAspectRatio))
+        gf.load_image(self)
 
     def show_image(self):
-        self.display_image(self.modified_image)
+        gf.show_image(self)
+
 
     def reset_image(self):
-        if self.image is not None:
-            self.modified_image = self.image.copy()
-            self.display_image(self.image)
+        gf.reset_image(self)
 
     def convert_to_grey(self):
-        if self.modified_image is not None:
-            if len(self.modified_image.shape) == 3:
-                self.modified_image = cv2.cvtColor(self.modified_image, cv2.COLOR_RGB2GRAY)
-                self.display_image(self.modified_image)
+        gf.convert_to_grey(self)
 
     def gaussian_blur(self, image, kernel_size=5, sigma=1.0):
         """Apply Gaussian blur to an image using custom implementation."""
@@ -207,33 +181,33 @@ class CannyEdgeDetection(QWidget):
 
         return False
 
-    def hough_transform_lines(self, edges, threshold=50):
-        """Detect lines using Hough transform."""
-        h, w = edges.shape
-        diag_len = int(np.ceil(np.sqrt(h * h + w * w)))
-
-        # Hough space: theta (-90 to 90 degrees), rho (-diag_len to diag_len)
-        thetas = np.deg2rad(np.arange(-90, 90))
-        rhos = np.linspace(-diag_len, diag_len, 2 * diag_len)
-
-        # Initialize accumulator
-        accumulator = np.zeros((len(rhos), len(thetas)), dtype=np.uint64)
-        y_idxs, x_idxs = np.nonzero(edges)
-
-        # Vote in the accumulator
-        for y, x in zip(y_idxs, x_idxs):
-            for theta_idx, theta in enumerate(thetas):
-                rho = int(x * np.cos(theta) + y * np.sin(theta)) + diag_len
-                accumulator[rho, theta_idx] += 1
-
-        # Find peaks in the accumulator
-        lines = []
-        for rho_idx, theta_idx in zip(*np.where(accumulator > threshold)):
-            rho = rhos[rho_idx]
-            theta = thetas[theta_idx]
-            lines.append((rho, theta))
-
-        return lines
+    # def hough_transform_lines(self, edges, threshold=50):
+    #     """Detect lines using Hough transform."""
+    #     h, w = edges.shape
+    #     diag_len = int(np.ceil(np.sqrt(h * h + w * w)))
+    #
+    #     # Hough space: theta (-90 to 90 degrees), rho (-diag_len to diag_len)
+    #     thetas = np.deg2rad(np.arange(-90, 90))
+    #     rhos = np.linspace(-diag_len, diag_len, 2 * diag_len)
+    #
+    #     # Initialize accumulator
+    #     accumulator = np.zeros((len(rhos), len(thetas)), dtype=np.uint64)
+    #     y_idxs, x_idxs = np.nonzero(edges)
+    #
+    #     # Vote in the accumulator
+    #     for y, x in zip(y_idxs, x_idxs):
+    #         for theta_idx, theta in enumerate(thetas):
+    #             rho = int(x * np.cos(theta) + y * np.sin(theta)) + diag_len
+    #             accumulator[rho, theta_idx] += 1
+    #
+    #     # Find peaks in the accumulator
+    #     lines = []
+    #     for rho_idx, theta_idx in zip(*np.where(accumulator > threshold)):
+    #         rho = rhos[rho_idx]
+    #         theta = thetas[theta_idx]
+    #         lines.append((rho, theta))
+    #
+    #     return lines
 
     def hough_transform_circles(self, edges, min_radius=10, max_radius=100, threshold=30):
         """Detect circles using Hough transform."""
@@ -312,6 +286,9 @@ class CannyEdgeDetection(QWidget):
         if self.modified_image is None:
             return
 
+        # Store original image for overlay
+        original_image = self.modified_image.copy()
+
         # Convert to grayscale if needed
         if len(self.modified_image.shape) == 3:
             grey_image = cv2.cvtColor(self.modified_image, cv2.COLOR_RGB2GRAY)
@@ -335,28 +312,37 @@ class CannyEdgeDetection(QWidget):
         suppressed = self.non_max_suppression(gradient_magnitude, gradient_direction)
 
         # Step 5: Apply hysteresis thresholding
-        edges = self.hysteresis_thresholding(suppressed)
+        edges = self.hysteresis_thresholding(suppressed, low_ratio=0.1, high_ratio=0.2)
         edge_image = edges.astype(np.uint8) * 255
 
-        # Create RGB image for visualization
-        result_image = cv2.cvtColor(grey_image, cv2.COLOR_GRAY2RGB)
+        # Create RGB image from original for visualization
+        if len(original_image.shape) == 3:
+            result_image = original_image.copy()
+        else:
+            result_image = cv2.cvtColor(original_image, cv2.COLOR_GRAY2RGB)
 
-        # Step 6: Detect lines
-        lines = self.hough_transform_lines(edges, threshold=40)
+        # Step 6: Detect lines with improved thresholding
+        lines = self.hough_transform_lines(edges, threshold=30)
 
-        # Step 7: Detect circles
-        circles = self.hough_transform_circles(edges, min_radius=15, max_radius=100, threshold=25)
+        # Filter lines to avoid duplicates
+        filtered_lines = self.filter_lines(lines, 10, 10)
+
+        # Step 7: Detect circles with better parameters to reduce false positives
+        circles = self.hough_transform_circles(edges, min_radius=20, max_radius=100, threshold=35)
+
+        # Filter circles based on edge coverage to reduce false positives
+        filtered_circles = self.filter_circles(edges, circles, min_edge_ratio=0.3)
 
         # Step 8: Detect ellipses
         ellipses = self.fit_ellipses(edge_image)
 
-        # Step 9: Draw original image
-        result_image = self.image.copy() if len(self.image.shape) == 3 else cv2.cvtColor(self.image, cv2.COLOR_GRAY2RGB)
+        # Filter ellipses to remove those that are too similar to circles or each other
+        filtered_ellipses = self.filter_ellipses(ellipses, filtered_circles)
 
-        # Step 10: Draw detected shapes on the image
+        # Step 9: Draw detected shapes on the image
         # Draw lines (in red)
         h, w = edges.shape
-        for rho, theta in lines:
+        for rho, theta in filtered_lines:
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
@@ -368,25 +354,144 @@ class CannyEdgeDetection(QWidget):
             cv2.line(result_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
         # Draw circles (in green)
-        for x, y, r in circles:
+        for x, y, r in filtered_circles:
             cv2.circle(result_image, (x, y), r, (0, 255, 0), 2)
 
         # Draw ellipses (in blue)
-        for ellipse in ellipses:
+        for ellipse in filtered_ellipses:
             cv2.ellipse(result_image, ellipse, (0, 0, 255), 2)
-
-        # Draw edges (in white, semi-transparent)
-        edge_overlay = result_image.copy()
-        edge_rgb = cv2.cvtColor(edge_image, cv2.COLOR_GRAY2RGB)
-        mask = edge_image > 0
-        edge_overlay[mask] = (255, 255, 255)
-        result_image = cv2.addWeighted(result_image, 0.7, edge_overlay, 0.3, 0)
 
         # Update the modified image
         self.modified_image = result_image
         self.show_image()
 
         return result_image
+
+    def filter_lines(self, lines, rho_threshold=10, theta_threshold=0.1):
+        """Filter detected lines to remove duplicates."""
+        if not lines:
+            return []
+
+        filtered_lines = []
+
+        for rho, theta in lines:
+            # Check if this line is too similar to any line we've already kept
+            if not any(abs(rho - r) < rho_threshold and abs(theta - t) < theta_threshold
+                       for r, t in filtered_lines):
+                filtered_lines.append((rho, theta))
+
+        return filtered_lines
+
+    def filter_circles(self, edges, circles, min_edge_ratio=0.3):
+        """Filter detected circles based on how well they match the edge image."""
+        if not circles:
+            return []
+
+        filtered_circles = []
+
+        for x, y, r in circles:
+            # Create a mask for this circle
+            h, w = edges.shape
+            mask = np.zeros((h, w), dtype=np.uint8)
+            cv2.circle(mask, (x, y), r, 1, 1)
+
+            # Count edge pixels along the circle
+            edge_count = np.sum(edges & (mask > 0))
+
+            # Theoretical maximum number of edge pixels (circle circumference)
+            max_edge_count = 2 * np.pi * r
+
+            # Calculate ratio of actual edge pixels to the theoretical maximum
+            edge_ratio = edge_count / max_edge_count if max_edge_count > 0 else 0
+
+            # Only keep circles with a good edge match
+            if edge_ratio >= min_edge_ratio:
+                # Check for duplicates or near-duplicates
+                if not any(np.sqrt((x - cx) ** 2 + (y - cy) ** 2) < max(5, (r + cr) / 4)
+                           and abs(r - cr) < max(5, r / 4) for cx, cy, cr in filtered_circles):
+                    filtered_circles.append((x, y, r))
+
+        return filtered_circles
+
+    def filter_ellipses(self, ellipses, circles, similarity_threshold=0.7):
+        """Filter ellipses to remove those too similar to circles or other ellipses."""
+        if not ellipses:
+            return []
+
+        filtered_ellipses = []
+
+        for ellipse in ellipses:
+            center, axes, angle = ellipse
+            cx, cy = center
+            a, b = axes
+
+            # Skip ellipses that are too similar to circles
+            too_similar_to_circle = False
+            for circle_x, circle_y, radius in circles:
+                # Check if centers are close
+                if np.sqrt((cx - circle_x) ** 2 + (cy - circle_y) ** 2) < max(a, b) / 2:
+                    # Check if axes are similar (making it essentially a circle)
+                    axis_ratio = min(a, b) / max(a, b) if max(a, b) > 0 else 0
+                    if axis_ratio > similarity_threshold:
+                        too_similar_to_circle = True
+                        break
+
+            if too_similar_to_circle:
+                continue
+
+            # Check if too similar to already filtered ellipses
+            too_similar = False
+            for other_ellipse in filtered_ellipses:
+                other_center, other_axes, other_angle = other_ellipse
+                other_cx, other_cy = other_center
+                other_a, other_b = other_axes
+
+                # Check if centers are close
+                if np.sqrt((cx - other_cx) ** 2 + (cy - other_cy) ** 2) < max(a, b, other_a, other_b) / 2:
+                    # Check if axes have similar sizes
+                    if (abs(a - other_a) / max(a, other_a) < 0.2 and
+                            abs(b - other_b) / max(b, other_b) < 0.2):
+                        too_similar = True
+                        break
+
+            if not too_similar:
+                filtered_ellipses.append(ellipse)
+
+        return filtered_ellipses
+
+    def hough_transform_lines(self, edges, threshold=30, angle_step=1):
+        """Detect lines using Hough transform with improved precision."""
+        h, w = edges.shape
+        diag_len = int(np.ceil(np.sqrt(h * h + w * w)))
+
+        # Hough space: theta (-90 to 90 degrees with finer step), rho (-diag_len to diag_len)
+        thetas = np.deg2rad(np.arange(-90, 90, angle_step))
+        rhos = np.linspace(-diag_len, diag_len, 2 * diag_len)
+
+        # Initialize accumulator
+        accumulator = np.zeros((len(rhos), len(thetas)), dtype=np.uint64)
+        y_idxs, x_idxs = np.nonzero(edges)
+
+        # Vote in the accumulator
+        for y, x in zip(y_idxs, x_idxs):
+            for theta_idx, theta in enumerate(thetas):
+                rho = int(x * np.cos(theta) + y * np.sin(theta)) + diag_len
+                if 0 <= rho < len(rhos):
+                    accumulator[rho, theta_idx] += 1
+
+        # Find peaks in the accumulator
+        lines = []
+        # Apply non-maximum suppression to find strong peaks
+        for rho_idx in range(1, len(rhos) - 1):
+            for theta_idx in range(1, len(thetas) - 1):
+                if (accumulator[rho_idx, theta_idx] > threshold and
+                        accumulator[rho_idx, theta_idx] >= accumulator[rho_idx - 1:rho_idx + 2,
+                                                           theta_idx - 1:theta_idx + 2].max()):
+                    rho = rhos[rho_idx]
+                    theta = thetas[theta_idx]
+                    lines.append((rho, theta))
+
+        return lines
 
 
 class MainWindow(QMainWindow):
