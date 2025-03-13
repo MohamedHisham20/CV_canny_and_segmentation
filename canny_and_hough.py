@@ -316,51 +316,51 @@ class CannyEdgeDetection(QWidget):
         edge_image = edges.astype(np.uint8) * 255
 
         # Create RGB image from original for visualization
-        if len(original_image.shape) == 3:
-            result_image = original_image.copy()
+        if len(edge_image.shape) == 3:
+            result_image = edge_image.copy()
         else:
-            result_image = cv2.cvtColor(original_image, cv2.COLOR_GRAY2RGB)
+            result_image = cv2.cvtColor(edge_image, cv2.COLOR_GRAY2RGB)
 
-        # Step 6: Detect lines with improved thresholding
-        lines = self.hough_transform_lines(edges, threshold=30)
-
-        # Filter lines to avoid duplicates
-        filtered_lines = self.filter_lines(lines, 10, 10)
-
-        # Step 7: Detect circles with better parameters to reduce false positives
-        circles = self.hough_transform_circles(edges, min_radius=20, max_radius=100, threshold=35)
-
-        # Filter circles based on edge coverage to reduce false positives
-        filtered_circles = self.filter_circles(edges, circles, min_edge_ratio=0.3)
-
-        # Step 8: Detect ellipses
-        ellipses = self.fit_ellipses(edge_image)
-
-        # Filter ellipses to remove those that are too similar to circles or each other
-        filtered_ellipses = self.filter_ellipses(ellipses, filtered_circles)
-
-        # Step 9: Draw detected shapes on the image
-        # Draw lines (in red)
-        h, w = edges.shape
-        for rho, theta in filtered_lines:
-            a = np.cos(theta)
-            b = np.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            x1 = int(x0 + 1000 * (-b))
-            y1 = int(y0 + 1000 * (a))
-            x2 = int(x0 - 1000 * (-b))
-            y2 = int(y0 - 1000 * (a))
-            cv2.line(result_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
-
-        # Draw circles (in green)
-        for x, y, r in filtered_circles:
-            cv2.circle(result_image, (x, y), r, (0, 255, 0), 2)
-
-        # Draw ellipses (in blue)
-        for ellipse in filtered_ellipses:
-            cv2.ellipse(result_image, ellipse, (0, 0, 255), 2)
-
+        # # Step 6: Detect lines with improved thresholding
+        # lines = self.hough_transform_lines(edges, threshold=30)
+        #
+        # # Filter lines to avoid duplicates
+        # filtered_lines = self.filter_lines(lines, 10, 10)
+        #
+        # # Step 7: Detect circles with better parameters to reduce false positives
+        # circles = self.hough_transform_circles(edges, min_radius=20, max_radius=100, threshold=35)
+        #
+        # # Filter circles based on edge coverage to reduce false positives
+        # filtered_circles = self.filter_circles(edges, circles, min_edge_ratio=0.3)
+        #
+        # # Step 8: Detect ellipses
+        # ellipses = self.fit_ellipses(edge_image)
+        #
+        # # Filter ellipses to remove those that are too similar to circles or each other
+        # filtered_ellipses = self.filter_ellipses(ellipses, filtered_circles)
+        #
+        # # Step 9: Draw detected shapes on the image
+        # # Draw lines (in red)
+        # h, w = edges.shape
+        # for rho, theta in filtered_lines:
+        #     a = np.cos(theta)
+        #     b = np.sin(theta)
+        #     x0 = a * rho
+        #     y0 = b * rho
+        #     x1 = int(x0 + 1000 * (-b))
+        #     y1 = int(y0 + 1000 * (a))
+        #     x2 = int(x0 - 1000 * (-b))
+        #     y2 = int(y0 - 1000 * (a))
+        #     cv2.line(result_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+        #
+        # # Draw circles (in green)
+        # for x, y, r in filtered_circles:
+        #     cv2.circle(result_image, (x, y), r, (0, 255, 0), 2)
+        #
+        # # Draw ellipses (in blue)
+        # for ellipse in filtered_ellipses:
+        #     cv2.ellipse(result_image, ellipse, (0, 0, 255), 2)
+        #
         # Update the modified image
         self.modified_image = result_image
         self.show_image()
