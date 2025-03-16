@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 from PySide6.QtCore import Qt
@@ -5,6 +7,7 @@ from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QFileDialog, QApplication
 from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QHBoxLayout
 import general_functions as gf
+from randomizedHoughEllipseDetection import FindEllipseRHT
 
 
 class CannyEdgeDetection(QWidget):
@@ -36,15 +39,20 @@ class CannyEdgeDetection(QWidget):
         load_button.clicked.connect(self.load_image)
         button_layout.addWidget(load_button)
 
+        # save image button
+        save_button = QPushButton('Save Image')
+        save_button.clicked.connect(self.save_image)
+        button_layout.addWidget(save_button)
+
         # Reset button
         reset_button = QPushButton('Reset Image')
         reset_button.clicked.connect(self.reset_image)
         button_layout.addWidget(reset_button)
 
         # Convert to grey button
-        grey_button = QPushButton('Convert to Grey')
-        grey_button.clicked.connect(self.convert_to_grey)
-        button_layout.addWidget(grey_button)
+        hough_button = QPushButton('detect hough')
+        hough_button.clicked.connect(self.hough_transform_test)
+        button_layout.addWidget(hough_button)
 
         # Canny edge detection button
         canny_button = QPushButton('Detect Edges & Shapes')
@@ -60,6 +68,8 @@ class CannyEdgeDetection(QWidget):
     def show_image(self):
         gf.show_image(self)
 
+    def save_image(self):
+        gf.save_image(self)
 
     def reset_image(self):
         gf.reset_image(self)
@@ -209,6 +219,22 @@ class CannyEdgeDetection(QWidget):
     #
     #     return lines
 
+    def hough_transform_test(self):
+        img = self.modified_image
+        mask = cv2.imread("circle_mask.png", 0)
+        mask_binary = np.zeros(mask.shape, dtype=bool)
+        mask_binary[mask == 255] = True
+        mask_binary[mask != 255] = False
+
+        time1 = time.time()
+        test = FindEllipseRHT(img, mask_binary)
+        # plt.figure()
+        # plt.imshow(original_image)
+        # plt.show()
+        test.run(plot_mode=True, debug_mode=False)
+        time2 = time.time()
+        print("time consume: ", time2 - time1)
+
     def hough_transform_circles(self, edges, min_radius=10, max_radius=100, threshold=30):
         """Detect circles using Hough transform."""
         h, w = edges.shape
@@ -321,46 +347,6 @@ class CannyEdgeDetection(QWidget):
         else:
             result_image = cv2.cvtColor(edge_image, cv2.COLOR_GRAY2RGB)
 
-        # # Step 6: Detect lines with improved thresholding
-        # lines = self.hough_transform_lines(edges, threshold=30)
-        #
-        # # Filter lines to avoid duplicates
-        # filtered_lines = self.filter_lines(lines, 10, 10)
-        #
-        # # Step 7: Detect circles with better parameters to reduce false positives
-        # circles = self.hough_transform_circles(edges, min_radius=20, max_radius=100, threshold=35)
-        #
-        # # Filter circles based on edge coverage to reduce false positives
-        # filtered_circles = self.filter_circles(edges, circles, min_edge_ratio=0.3)
-        #
-        # # Step 8: Detect ellipses
-        # ellipses = self.fit_ellipses(edge_image)
-        #
-        # # Filter ellipses to remove those that are too similar to circles or each other
-        # filtered_ellipses = self.filter_ellipses(ellipses, filtered_circles)
-        #
-        # # Step 9: Draw detected shapes on the image
-        # # Draw lines (in red)
-        # h, w = edges.shape
-        # for rho, theta in filtered_lines:
-        #     a = np.cos(theta)
-        #     b = np.sin(theta)
-        #     x0 = a * rho
-        #     y0 = b * rho
-        #     x1 = int(x0 + 1000 * (-b))
-        #     y1 = int(y0 + 1000 * (a))
-        #     x2 = int(x0 - 1000 * (-b))
-        #     y2 = int(y0 - 1000 * (a))
-        #     cv2.line(result_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
-        #
-        # # Draw circles (in green)
-        # for x, y, r in filtered_circles:
-        #     cv2.circle(result_image, (x, y), r, (0, 255, 0), 2)
-        #
-        # # Draw ellipses (in blue)
-        # for ellipse in filtered_ellipses:
-        #     cv2.ellipse(result_image, ellipse, (0, 0, 255), 2)
-        #
         # Update the modified image
         self.modified_image = result_image
         self.show_image()

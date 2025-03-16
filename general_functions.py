@@ -54,3 +54,11 @@ def convert_to_grey(self):
     grey_image = cv2.cvtColor(self.modified_image, cv2.COLOR_RGB2GRAY)
     self.modified_image = cv2.cvtColor(grey_image, cv2.COLOR_GRAY2RGB)
     self.show_image()
+
+def save_image(self):
+    if self.modified_image is None:
+        return
+
+    file_name, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp)")
+    if file_name:
+        cv2.imwrite(file_name, cv2.cvtColor(self.modified_image, cv2.COLOR_RGB2BGR))
