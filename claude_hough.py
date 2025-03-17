@@ -230,8 +230,8 @@ def create_test_image(width=300, height=200, num_ellipses=3, noise_level=0.05):
     #     noise = np.random.random(image.shape) < noise_level
     #     image = np.logical_or(image, noise).astype(np.uint8)
 
-    #save the image
-    cv2.imwrite("images/maskyy.png", image*255)
+    # #save the image
+    # cv2.imwrite("images/maskyy.png", image*255)
 
     return image
 
@@ -299,19 +299,19 @@ def main():
 
     # 2. Set up detection parameters
     params = {
-        'minMajorAxis': 15,
-        'maxMajorAxis': 1000,
-        'rotation': 0,
-        'rotationSpan': 90,
+        'minMajorAxis': 5,
+        'maxMajorAxis': 100,
+        'rotation': -360,
+        'rotationSpan': 360,
         'minAspectRatio': 0.3,
         'randomize': 5,
-        'numBest': 3,
+        'numBest': 6,
         'uniformWeights': True,
         'smoothStddev': 1,
-        'max_points': 5000  # Limit the number of points to process
+        'max_points': 8000  # Limit the number of points to process
     }
 
-    test_image_path = "images/canny.png"
+    test_image_path = "images/canna.png"
     test_image = cv2.imread(test_image_path, cv2.IMREAD_GRAYSCALE)
     # 3. Run ellipse detection
     ellipses = ellipse_detection(test_image, params, verbose=True)
