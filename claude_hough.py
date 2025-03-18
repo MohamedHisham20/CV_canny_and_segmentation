@@ -254,29 +254,22 @@ def draw_ellipses(image, ellipses, colors=None):
         if ellipse_params[5] == 0:  # Skip ellipses with zero score
             continue
 
-        color = colors[i % len(colors)]  # Pick a color
+        color = colors[i % len(colors)]
+        # Convert from RGB to BGR for OpenCV
+        cv_color = (int(color[2] * 255), int(color[1] * 255), int(color[0] * 255))
+
         x0, y0, a, b, angle = ellipse_params[:5]
+        center = (int(x0), int(y0))  # Note: OpenCV uses (x,y) order, not (y,x)
+        axes = (int(a), int(b))
 
         # Draw filled ellipse
-        rr_fill, cc_fill = ellipse(
-            int(y0), int(x0), int(b), int(a),
-            rotation=np.radians(angle),
-            shape=image.shape
-        )
-        rgb_image[rr_fill, cc_fill] = color  # Fill the ellipse interior
+        cv2.ellipse(rgb_image, center, axes, angle, 0, 360, cv_color, -1)  # -1 for filled
 
-        # Draw ellipse perimeter
-        rr_perim, cc_perim = ellipse_perimeter(
-            int(y0), int(x0), int(b), int(a),
-            orientation=np.radians(angle),
-            shape=image.shape
-        )
-        valid_idx = (0 <= rr_perim) & (rr_perim < image.shape[0]) & (0 <= cc_perim) & (cc_perim < image.shape[1])
-        rr_perim, cc_perim = rr_perim[valid_idx], cc_perim[valid_idx]
-
-        rgb_image[rr_perim, cc_perim] = color  # Draw perimeter
+        # Draw ellipse outline (same parameters ensure perfect alignment)
+        cv2.ellipse(rgb_image, center, axes, angle, 0, 360, cv_color, 1)
 
     return rgb_image
+
 
 
 # Main execution example
@@ -300,7 +293,7 @@ def main():
     # 2. Set up detection parameters
     params = {
         'minMajorAxis': 5,
-        'maxMajorAxis': 10000,
+        'maxMajorAxis': 100,
         'rotation': -360,
         'rotationSpan': 360,
         'minAspectRatio': 0.3,
