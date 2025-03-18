@@ -29,12 +29,12 @@ class MainWindow(QMainWindow):
         self.IterationsText.setText("100")
 
 
-        # Initialize variables
+       
         self.image = None
         self.output_image = None
         self.contour_position = QPoint(200, 200)
         self.contour_size = 50
-        self.num_points = 20  # Initial number of points along contour
+        self.num_points = 20 
         self.circle_points = []
         self.square_points = []
         self.dragging = False
@@ -200,15 +200,16 @@ class MainWindow(QMainWindow):
         
         # Thresholding to extract edges
         edges = gradient_magnitude > threshold
+        smooth_edges = gaussian_filter(edges.astype(float), sigma=1)
         edge_points = np.column_stack(np.where(edges))
-        external_energy = -gradient_magnitude  # Negative attracts contour to edges
+        external_energy = -gradient_magnitude  * smooth_edges # Negative attracts contour to edges
         min_energy = np.min(external_energy)
         max_energy = np.max(external_energy)
         if max_energy - min_energy > 1e-6:
             external_energy = (external_energy - min_energy) / (max_energy - min_energy)
         
         # Set external energy at edge points to -1000
-        external_energy[edge_points[:, 0], edge_points[:, 1]] = -1000
+        external_energy[edge_points[:, 0], edge_points[:, 1]] = -10
         
         return edge_points, external_energy
 
@@ -262,6 +263,9 @@ class MainWindow(QMainWindow):
         A_inv = np.linalg.inv(A + self.gamma * np.eye(num_points))
         contour = initial_contour.copy()
         
+        # Track which points have reached edges
+        edge_reached = np.zeros(num_points, dtype=bool)
+        
         for iteration in range(self.max_iterations):
             fx = np.gradient(external_energy, axis=1)
             fy = np.gradient(external_energy, axis=0)
@@ -271,18 +275,37 @@ class MainWindow(QMainWindow):
             x_coords = np.clip(x_coords, 0, self.image.shape[1] - 1)
             y_coords = np.clip(y_coords, 0, self.image.shape[0] - 1)
             
+            # Check which points have reached edges
+            for i in range(num_points):
+                if y_coords[i] < 0 or y_coords[i] >= external_energy.shape[0] or \
+                x_coords[i] < 0 or x_coords[i] >= external_energy.shape[1]:
+                    continue
+                    
+                if external_energy[y_coords[i], x_coords[i]] < 0:
+                    edge_reached[i] = True
+            
             external_forces_x = fx[y_coords, x_coords]
             external_forces_y = fy[y_coords, x_coords]
             external_forces = np.vstack((external_forces_x, external_forces_y)).T
             
-            contour = np.dot(A_inv, self.gamma * contour - external_forces)
+            # Calculate new positions
+            new_contour = np.dot(A_inv, self.gamma * contour - external_forces)
+            
+            # Only update positions for points that haven't reached edges
+            for i in range(num_points):
+                if not edge_reached[i]:
+                    contour[i] = new_contour[i]
             
             if iteration % 10 == 0:
-                contour = self.redistribute_points(contour, num_points)
+                # When redistributing points, maintain fixed positions for points that reached edges
+                temp_contour = self.redistribute_points(contour, num_points)
+                for i in range(num_points):
+                    if not edge_reached[i]:
+                        contour[i] = temp_contour[i] * 0.2 + 0.8 * contour[i]
             
-            # Check if any point reaches the edge (-1000 energy)
-            if np.any(external_energy[y_coords, x_coords] < -999):
-                print(f"Contour reached edge (energy < -999) at iteration {iteration + 1}. Stopping.")
+            # Check if all points have reached edges
+            if np.all(edge_reached):
+                print(f"All contour points reached edges at iteration {iteration + 1}. Stopping.")
                 break
         
         # Draw the final contour on the output image
@@ -305,7 +328,6 @@ class MainWindow(QMainWindow):
         self.display_image(self.output_image, self.OutputImage)
         
         print("Active contour completed successfully.")
-
 
 
 if __name__ == "__main__":
