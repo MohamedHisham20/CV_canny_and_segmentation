@@ -300,12 +300,12 @@ def main():
     # 2. Set up detection parameters
     params = {
         'minMajorAxis': 5,
-        'maxMajorAxis': 100,
+        'maxMajorAxis': 10000,
         'rotation': -360,
         'rotationSpan': 360,
         'minAspectRatio': 0.3,
         'randomize': 5,
-        'numBest': 6,
+        'numBest': 10,
         'uniformWeights': True,
         'smoothStddev': 1,
         'max_points': 8000  # Limit the number of points to process
