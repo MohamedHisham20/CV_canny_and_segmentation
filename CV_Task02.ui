@@ -427,9 +427,9 @@ QPushButton:hover{
    <widget class="QPushButton" name="ResetButton">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>820</x>
       <y>700</y>
-      <width>131</width>
+      <width>111</width>
       <height>41</height>
      </rect>
     </property>
@@ -811,6 +811,41 @@ QPushButton:hover{
      <string>Canny</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="ChainCodeButton">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>700</y>
+      <width>131</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+ background-color: #A29790;
+ border-radius: 7px;
+ color: #2B313B;
+ font-size: 13px;
+ font-weight: 700;
+border:3px solid #D4D7D8;
+ letter-spacing: .8px;
+ line-height: 20px;
+ text-align: center;
+ text-transform: uppercase;
+	}
+
+QPushButton:hover{
+	
+	background-color:#998D85;
+	}
+
+
+</string>
+    </property>
+    <property name="text">
+     <string>Chain Code</string>
+    </property>
+   </widget>
    <zorder>label</zorder>
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
@@ -845,6 +880,7 @@ QPushButton:hover{
    <zorder>ThresholdHorizontalSlider</zorder>
    <zorder>label_16</zorder>
    <zorder>CannyFilterButton</zorder>
+   <zorder>ChainCodeButton</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
