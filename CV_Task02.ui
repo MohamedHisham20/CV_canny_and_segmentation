@@ -71,7 +71,7 @@ border:3px solid #3E2B22;</string>
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="InputImage" native="true">
+   <widget class="QLabel" name="InputImage">
     <property name="geometry">
      <rect>
       <x>40</x>
@@ -85,7 +85,7 @@ border:3px solid #3E2B22;</string>
 border-radius:20px;</string>
     </property>
    </widget>
-   <widget class="QLabel" name="OutputImage" native="true">
+   <widget class="QLabel" name="OutputImage">
     <property name="geometry">
      <rect>
       <x>960</x>
@@ -192,9 +192,9 @@ border:3px solid #D4D7D8;
    <widget class="QLineEdit" name="AlphaText">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>681</y>
-      <width>181</width>
+      <x>200</x>
+      <y>680</y>
+      <width>131</width>
       <height>31</height>
      </rect>
     </property>
@@ -214,9 +214,9 @@ border:3px solid #D4D7D8;
    <widget class="QLineEdit" name="BetaText">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>200</x>
       <y>741</y>
-      <width>181</width>
+      <width>131</width>
       <height>31</height>
      </rect>
     </property>
@@ -236,9 +236,9 @@ border:3px solid #D4D7D8;
    <widget class="QLineEdit" name="GammaText">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>500</x>
       <y>680</y>
-      <width>201</width>
+      <width>141</width>
       <height>31</height>
      </rect>
     </property>
@@ -258,9 +258,9 @@ border:3px solid #D4D7D8;
    <widget class="QLineEdit" name="IterationsText">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>500</x>
       <y>740</y>
-      <width>201</width>
+      <width>141</width>
       <height>31</height>
      </rect>
     </property>
@@ -280,9 +280,9 @@ border:3px solid #D4D7D8;
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>60</x>
       <y>680</y>
-      <width>55</width>
+      <width>141</width>
       <height>31</height>
      </rect>
     </property>
@@ -293,34 +293,15 @@ font-size:15px;
 font-weight:bold;</string>
     </property>
     <property name="text">
-     <string>Alpha</string>
+     <string>Alpha (Elasticity)</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>750</y>
-      <width>55</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color:#2B313B;
-color:#D4D7D8;
-font-size:15px;
-font-weight:bold;</string>
-    </property>
-    <property name="text">
-     <string>Beta</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_8">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>675</y>
-      <width>71</width>
+      <x>60</x>
+      <y>740</y>
+      <width>131</width>
       <height>31</height>
      </rect>
     </property>
@@ -331,13 +312,32 @@ font-size:15px;
 font-weight:bold;</string>
     </property>
     <property name="text">
-     <string>Gamma</string>
+     <string>Beta (Rigidity)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>675</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:#2B313B;
+color:#D4D7D8;
+font-size:15px;
+font-weight:bold;</string>
+    </property>
+    <property name="text">
+     <string>Gamma (Step Size)</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_9">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>350</x>
       <y>740</y>
       <width>81</width>
       <height>31</height>
@@ -427,9 +427,9 @@ QPushButton:hover{
    <widget class="QPushButton" name="ResetButton">
     <property name="geometry">
      <rect>
-      <x>1620</x>
-      <y>750</y>
-      <width>121</width>
+      <x>680</x>
+      <y>700</y>
+      <width>131</width>
       <height>41</height>
      </rect>
     </property>
@@ -494,37 +494,12 @@ QPushButton:hover{
      <string>Save</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="CannyFilterButton">
-    <property name="geometry">
-     <rect>
-      <x>1210</x>
-      <y>610</y>
-      <width>141</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"> background-color: #A29790;
- border-radius: 7px;
- color: #2B313B;
- font-size: 13px;
- font-weight: 700;
-border:3px solid #D4D7D8;
- letter-spacing: .8px;
- line-height: 20px;
- text-align: center;
- text-transform: uppercase;</string>
-    </property>
-    <property name="text">
-     <string>Canny</string>
-    </property>
-   </widget>
    <widget class="QRadioButton" name="LineFilterButton">
     <property name="geometry">
      <rect>
-      <x>1370</x>
+      <x>1280</x>
       <y>610</y>
-      <width>141</width>
+      <width>171</width>
       <height>41</height>
      </rect>
     </property>
@@ -547,9 +522,9 @@ border:3px solid #D4D7D8;
    <widget class="QRadioButton" name="EllipesFilterButton">
     <property name="geometry">
      <rect>
-      <x>1530</x>
+      <x>1470</x>
       <y>610</y>
-      <width>131</width>
+      <width>161</width>
       <height>41</height>
      </rect>
     </property>
@@ -572,9 +547,9 @@ border:3px solid #D4D7D8;
    <widget class="QRadioButton" name="CircleFilterButton">
     <property name="geometry">
      <rect>
-      <x>1680</x>
+      <x>1650</x>
       <y>610</y>
-      <width>131</width>
+      <width>161</width>
       <height>41</height>
      </rect>
     </property>
@@ -660,9 +635,9 @@ font-weight:bold;</string>
    <widget class="QPushButton" name="SuperimposeButton">
     <property name="geometry">
      <rect>
-      <x>1490</x>
-      <y>750</y>
-      <width>121</width>
+      <x>1600</x>
+      <y>700</y>
+      <width>141</width>
       <height>41</height>
      </rect>
     </property>
@@ -768,7 +743,7 @@ font-weight:bold;</string>
    <widget class="QLabel" name="label_15">
     <property name="geometry">
      <rect>
-      <x>630</x>
+      <x>640</x>
       <y>670</y>
       <width>20</width>
       <height>121</height>
@@ -786,7 +761,7 @@ border-right:2px solid #D4D7D8;</string>
    <widget class="QLabel" name="label_16">
     <property name="geometry">
      <rect>
-      <x>1450</x>
+      <x>1560</x>
       <y>670</y>
       <width>20</width>
       <height>121</height>
@@ -799,6 +774,41 @@ border-right:2px solid #D4D7D8;</string>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="CannyFilterButton">
+    <property name="geometry">
+     <rect>
+      <x>1600</x>
+      <y>750</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+ background-color: #A29790;
+ border-radius: 7px;
+ color: #2B313B;
+ font-size: 13px;
+ font-weight: 700;
+border:3px solid #D4D7D8;
+ letter-spacing: .8px;
+ line-height: 20px;
+ text-align: center;
+ text-transform: uppercase;
+	}
+
+
+QPushButton:hover{
+	
+	background-color:#998D85;
+	}
+
+</string>
+    </property>
+    <property name="text">
+     <string>Canny</string>
     </property>
    </widget>
    <zorder>label</zorder>
@@ -824,7 +834,6 @@ border-right:2px solid #D4D7D8;</string>
    <zorder>SquareContourButton</zorder>
    <zorder>CircleContourButton</zorder>
    <zorder>label_12</zorder>
-   <zorder>CannyFilterButton</zorder>
    <zorder>LineFilterButton</zorder>
    <zorder>EllipesFilterButton</zorder>
    <zorder>CircleFilterButton</zorder>
@@ -835,6 +844,7 @@ border-right:2px solid #D4D7D8;</string>
    <zorder>AlphaText</zorder>
    <zorder>ThresholdHorizontalSlider</zorder>
    <zorder>label_16</zorder>
+   <zorder>CannyFilterButton</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
