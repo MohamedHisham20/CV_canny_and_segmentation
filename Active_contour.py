@@ -265,6 +265,9 @@ class MainWindow(QMainWindow):
         for iteration in range(self.max_iterations):
             fx = np.gradient(external_energy, axis=1)
             fy = np.gradient(external_energy, axis=0)
+
+            fx = fx / np.max(np.abs(fx))
+            fy = fy / np.max(np.abs(fy))
             
             x_coords = contour[:, 0].astype(int)
             y_coords = contour[:, 1].astype(int)
@@ -279,11 +282,12 @@ class MainWindow(QMainWindow):
             
             if iteration % 10 == 0:
                 contour = self.redistribute_points(contour, num_points)
+                print(f"Iteration {iteration}: Contour Points:\n", contour)
             
             # Check if any point reaches the edge (-1000 energy)
-            if np.any(external_energy[y_coords, x_coords] < -999):
-                print(f"Contour reached edge (energy < -999) at iteration {iteration + 1}. Stopping.")
-                break
+            # if np.any(external_energy[y_coords, x_coords] < -999):
+            #     print(f"Contour reached edge (energy < -999) at iteration {iteration + 1}. Stopping.")
+            #     break
         
         # Draw the final contour on the output image
         result_image = self.image.copy()

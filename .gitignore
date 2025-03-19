@@ -1,2 +1,5 @@
 .idea
 .git
+.DS_Store
+Greedy Active Contour.ipynb
+__pycache__/
