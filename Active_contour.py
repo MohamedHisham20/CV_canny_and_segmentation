@@ -7,7 +7,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QVBo
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt, QPoint
-
+from post_contouring import PostContour
+from fpdf import FPDF
+import os
 
 
 class MainWindow(QMainWindow):
@@ -22,13 +24,15 @@ class MainWindow(QMainWindow):
         self.CircleContourButton.clicked.connect(self.draw_initial_contour)
         self.SquareContourButton.clicked.connect(self.draw_initial_contour)
         self.ApplyContourButton.clicked.connect(self.active_contour)
+        
 
         self.AlphaText.setText("0.1")
         self.BetaText.setText("0.1")
         self.GammaText.setText("1.0")
         self.IterationsText.setText("100")
 
-
+        ### Chain_code related
+        self.ChainCodeButton.clicked.connect(self.generate_contour_report)
 
         self.image = None
         self.output_image = None
@@ -40,6 +44,8 @@ class MainWindow(QMainWindow):
         self.dragging = False
         self.drag_offset = QPoint(0, 0)
         self.create_contour_points()
+        
+        self.chain_points = []
 
     def create_contour_points(self):
         """Generate dynamic points for the circle and square"""
@@ -302,6 +308,7 @@ class MainWindow(QMainWindow):
                     tuple(contour_points[(i+1) % len(contour_points)]), 
                     (0, 0, 255), 2)
         
+        self.chain_points = contour_points
         # Store the output image
         self.output_image = result_image
         
@@ -310,6 +317,43 @@ class MainWindow(QMainWindow):
         
         print("Active contour completed successfully.")
 
+    def generate_contour_report(self):
+        
+        chain_code = PostContour.generate_chain_code(self.chain_points)
+        area = round(PostContour.calculate_area(self.chain_points))
+        percent = round((area / (self.image.shape[0] * self.image.shape[1])) * 100, 2)
+        perimeter = round(PostContour.calculate_perimeter(self.chain_points))
+        screenshot = self.output_image  
+        
+        image_filename = "contour_image.png"
+        if isinstance(screenshot, (list, tuple, cv2.UMat)) or hasattr(screenshot, "shape"):
+            cv2.imwrite(image_filename, screenshot)
+        else:
+            print("Error: Invalid image data.")
+            return
+        
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        
+        pdf.set_font("Arial", style="B", size=16)
+        pdf.cell(200, 10, "Contour Report", ln=True, align="C")
+        pdf.ln(10)
+
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, "Contour Image:", ln=True)
+        pdf.image(image_filename, x=10, y=pdf.get_y(), w=100)
+        pdf.ln(80)  
+
+        pdf.cell(200, 10, f"Area: {area} Pixels, equal to {percent}% of total image size.", ln=True)
+        pdf.cell(200, 10, f"Perimeter: {perimeter} Pixels.", ln=True)
+        
+
+        formatted_chain_code = " ".join(str(x) for x in chain_code)
+        pdf.multi_cell(0, 10, f"Chain Code: [{formatted_chain_code}]")
+        output_pdf = "contour_report.pdf"
+        pdf.output(output_pdf)
+        print(f"Report saved as {output_pdf}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

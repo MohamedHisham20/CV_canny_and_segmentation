@@ -7,21 +7,6 @@ from skimage.segmentation import active_contour
 class PostContour:
     def __init__(self, data):
         self.path = data
-        self.test_path_1 = [
-            (2, 2), (3, 2), (4, 2), (5, 2),  
-            (5, 3), (5, 4), (5, 5),  
-            (4, 5), (3, 5), (2, 5),  
-            (2, 4), (2, 3) 
-        ]
-        self.test_path_2 = [(2, 1), (5, 3), (4, 6), (1, 4)]
-        self.test_path_3 = [(1,4), (3,6), (5,5), (2,2)]
-        self.test_path_4 = [(2, 4), (3, 2), (5, 2), (6, 4), (5, 6), (3, 6)]
-        self.test_path_5 = [(2, 2), (4, 3), (3, 5), (5, 6), (6, 4), (4, 2), (2, 2)]
-        self.test_path_6 = [(0, 0), (0, 1), (0, 2), (0, 3)] #vertical line
-        self.test_path_7 = [(0, 0), (1, 0), (2, 0), (3, 0)] #horizontal line
-        self.test_path_8 = [(0, 0), (1, 0), (1, 1), (0, 0)] #triangle
-
-        self.path = self.test_path_4
 
     @staticmethod
     def calculate_area(path):
@@ -61,41 +46,43 @@ class PostContour:
             chain_code.append(direction_map[(dx, dy)])
 
         return chain_code
+    
+    
 
 
 #######TESTING#######
 
-image = np.zeros((100, 100), dtype=np.uint8)
-cv2.circle(image, (50, 50), 30, 255, -1)  # Draw filled circle
-image = gaussian(image, sigma=1)  # Smooth image
+# image = np.zeros((100, 100), dtype=np.uint8)
+# cv2.circle(image, (50, 50), 30, 255, -1)  # Draw filled circle
+# image = gaussian(image, sigma=1)  # Smooth image
 
-# Create initial snake (circle around the object)
-t = np.linspace(0, 2 * np.pi, 100)
-x = 50 + 35 * np.cos(t)  # Slightly larger than the object
-y = 50 + 35 * np.sin(t)
-init_snake = np.array([x, y]).T
+# # Create initial snake (circle around the object)
+# t = np.linspace(0, 2 * np.pi, 100)
+# x = 50 + 35 * np.cos(t)  # Slightly larger than the object
+# y = 50 + 35 * np.sin(t)
+# init_snake = np.array([x, y]).T
 
-# Apply active contour model
-snake = active_contour(image, init_snake, alpha=0.01, beta=0.1, gamma=0.01)
+# # Apply active contour model
+# snake = active_contour(image, init_snake, alpha=0.01, beta=0.1, gamma=0.01)
 
-# Round snake points to nearest pixels
-contour_path = [(int(round(pt[0])), int(round(pt[1]))) for pt in snake]
+# # Round snake points to nearest pixels
+# contour_path = [(int(round(pt[0])), int(round(pt[1]))) for pt in snake]
 
-# Compute Chain Code
-chain_code = PostContour.generate_chain_code(contour_path)
+# # Compute Chain Code
+# chain_code = PostContour.generate_chain_code(contour_path)
 
-# Display results
-plt.figure(figsize=(6, 6))
-plt.imshow(image, cmap='gray')
-plt.plot(init_snake[:, 0], init_snake[:, 1], '--r', label='Initial Snake')
-plt.plot(snake[:, 0], snake[:, 1], '-b', label='Final Contour')
-plt.scatter([p[0] for p in contour_path], [p[1] for p in contour_path], c='yellow', s=5)
-plt.legend()
-plt.title("Active Contour on Image")
-plt.show()
+# # Display results
+# plt.figure(figsize=(6, 6))
+# plt.imshow(image, cmap='gray')
+# plt.plot(init_snake[:, 0], init_snake[:, 1], '--r', label='Initial Snake')
+# plt.plot(snake[:, 0], snake[:, 1], '-b', label='Final Contour')
+# plt.scatter([p[0] for p in contour_path], [p[1] for p in contour_path], c='yellow', s=5)
+# plt.legend()
+# plt.title("Active Contour on Image")
+# plt.show()
 
-# Print Chain Code
-print("Chain Code:", chain_code)
+# # Print Chain Code
+# print("Chain Code:", chain_code)
 # # **Testing**
 # post_contour = PostContour([])
 
