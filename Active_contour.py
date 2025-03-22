@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
             return
         self.canny_image = canny_edge_detection(self.image)
         self.display_image(self.canny_image, self.OutputImage)
+        self.output_image = self.canny_image
 
     def hough_detection(self):
         print("Checking if canny_image is None...")
@@ -103,10 +104,10 @@ class MainWindow(QMainWindow):
         print("Checking which filter is selected...")
         if self.EllipesFilterButton.isChecked():
             print("Ellipse filter selected.")
-            hough_image = detect_hough_ellipse(self.canny_image)
+            hough_image = detect_hough_ellipse(self.canny_image, shape='ellipse')
         elif self.CircleFilterButton.isChecked():
             print("Circle filter selected.")
-            hough_image = detect_hough_ellipse(self.canny_image)
+            hough_image = detect_hough_ellipse(self.canny_image, shape='circle')
         elif self.LineFilterButton.isChecked():
             print("Line filter selected.")
             hough_image, lines = detect_hough_lines(self.canny_image)
@@ -116,6 +117,7 @@ class MainWindow(QMainWindow):
 
         print("Displaying image...")
         self.display_image(hough_image, self.OutputImage)
+        self.output_image = hough_image
         print("Processing completed successfully.")
 
     def draw_initial_contour(self):

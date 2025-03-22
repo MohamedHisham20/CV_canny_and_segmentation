@@ -268,23 +268,38 @@ def draw_ellipses(image, ellipses, colors=None):
 
     return rgb_image
 
-def detect_hough_ellipse(image, parameters=None):
+def detect_hough_ellipse(image, shape='ellipse', parameters=None):
     if image is None:
         print("Error: No image loaded for Hough transform.")
         return
 
-    params = {
-        'minMajorAxis': 5,
-        'maxMajorAxis': 100,
-        'rotation': -360,
-        'rotationSpan': 360,
-        'minAspectRatio': 0.3,
-        'randomize': 5,
-        'numBest': 10,
-        'uniformWeights': True,
-        'smoothStddev': 1,
-        'max_points': 8000
-    }
+    if shape == 'circle':
+        params = {
+            'minMajorAxis': 100,
+            'maxMajorAxis': 1000,
+            'rotation': -360,
+            'rotationSpan': 360,
+            'minAspectRatio': 0.5,
+            'randomize': 5,
+            'numBest': 5,
+            'uniformWeights': True,
+            'smoothStddev': 1,
+            'max_points': 8000
+        }
+    else: # ellipse
+        params = {
+            'minMajorAxis': 5,
+            'maxMajorAxis': 100,
+            'rotation': -360,
+            'rotationSpan': 360,
+            'minAspectRatio': 0.3,
+            'randomize': 5,
+            'numBest': 10,
+            'uniformWeights': True,
+            'smoothStddev': 1,
+            'max_points': 8000
+        }
+
     if parameters is not None:
         params.update(parameters)
 

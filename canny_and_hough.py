@@ -7,32 +7,32 @@ from claude_hough import ellipse_detection, draw_ellipses
 def show_image(widget):
     gf.show_image(widget)
 
-def detect_hough_ellipse(image, parameters=None):
-    if image is None:
-        print("Error: No image loaded for Hough transform.")
-        return
-
-    params = {
-        'minMajorAxis': 5,
-        'maxMajorAxis': 100,
-        'rotation': -360,
-        'rotationSpan': 360,
-        'minAspectRatio': 0.3,
-        'randomize': 5,
-        'numBest': 10,
-        'uniformWeights': True,
-        'smoothStddev': 1,
-        'max_points': 8000
-    }
-    if parameters is not None:
-        params.update(parameters)
-
-    test_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(
-        image.shape) == 3 else image
-    ellipses = ellipse_detection(test_image, params, verbose=True)
-    result_image = draw_ellipses(test_image, ellipses)
-    image = result_image
-    return image
+# def detect_hough_ellipse(image, parameters=None):
+#     if image is None:
+#         print("Error: No image loaded for Hough transform.")
+#         return
+#
+#     params = {
+#         'minMajorAxis': 5,
+#         'maxMajorAxis': 100,
+#         'rotation': -360,
+#         'rotationSpan': 360,
+#         'minAspectRatio': 0.3,
+#         'randomize': 5,
+#         'numBest': 10,
+#         'uniformWeights': True,
+#         'smoothStddev': 1,
+#         'max_points': 8000
+#     }
+#     if parameters is not None:
+#         params.update(parameters)
+#
+#     test_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(
+#         image.shape) == 3 else image
+#     ellipses = ellipse_detection(test_image, params, verbose=True)
+#     result_image = draw_ellipses(test_image, ellipses)
+#     image = result_image
+#     return image
 
 
 def canny_edge_detection(image):
