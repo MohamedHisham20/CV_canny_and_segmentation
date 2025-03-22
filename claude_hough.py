@@ -274,21 +274,6 @@ def draw_ellipses(image, ellipses, colors=None):
 
 # Main execution example
 def main():
-    # 1. Generate a test image or load your own image
-    # Option 1: Generate a test image with ellipses
-    test_image = create_test_image(width=400, height=300, num_ellipses=3, noise_level=0.02)
-
-    # Option 2: Load and process your own image
-    # image_path = "your_image.jpg"
-    # original_image = io.imread(image_path)
-    # if len(original_image.shape) > 2:  # Convert to grayscale if colored
-    #     gray_image = color.rgb2gray(original_image)
-    # else:
-    #     gray_image = original_image
-    #
-    # # Apply edge detection to get boundary points
-    # edges = feature.canny(gray_image, sigma=2)
-    # test_image = edges
 
     # 2. Set up detection parameters
     params = {
@@ -320,22 +305,6 @@ def main():
 
     # 5. Visualize results
     result_image = draw_ellipses(test_image, ellipses)
-
-    # Display original and result
-    plt.figure(figsize=(12, 6))
-
-    plt.subplot(1, 2, 1)
-    plt.imshow(test_image, cmap='gray')
-    plt.title('Original Image')
-    plt.axis('off')
-
-    plt.subplot(1, 2, 2)
-    plt.imshow(result_image)
-    plt.title('Detected Ellipses')
-    plt.axis('off')
-
-    plt.tight_layout()
-    plt.show()
 
 
 # Run the example

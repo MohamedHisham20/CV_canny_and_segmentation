@@ -1,5 +1,4 @@
-import time
-
+# canny and hough
 import cv2
 import numpy as np
 from PySide6.QtCore import Qt
@@ -7,7 +6,7 @@ from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QFileDialog, QApplication
 from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QHBoxLayout
 import general_functions as gf
-from randomizedHoughEllipseDetection import FindEllipseRHT
+from claude_hough import ellipse_detection, draw_ellipses
 
 
 class CannyEdgeDetection(QWidget):
@@ -51,7 +50,7 @@ class CannyEdgeDetection(QWidget):
 
         # Convert to grey button
         hough_button = QPushButton('detect hough')
-        hough_button.clicked.connect(self.hough_transform_test)
+        hough_button.clicked.connect(self.detect_hough_ellipse)
         button_layout.addWidget(hough_button)
 
         # Canny edge detection button
@@ -64,6 +63,8 @@ class CannyEdgeDetection(QWidget):
 
     def load_image(self):
         gf.load_image(self)
+        if self.modified_image is None:
+            print("Error: load image.")
 
     def show_image(self):
         gf.show_image(self)
@@ -191,49 +192,53 @@ class CannyEdgeDetection(QWidget):
 
         return False
 
-    # def hough_transform_lines(self, edges, threshold=50):
-    #     """Detect lines using Hough transform."""
-    #     h, w = edges.shape
-    #     diag_len = int(np.ceil(np.sqrt(h * h + w * w)))
-    #
-    #     # Hough space: theta (-90 to 90 degrees), rho (-diag_len to diag_len)
-    #     thetas = np.deg2rad(np.arange(-90, 90))
-    #     rhos = np.linspace(-diag_len, diag_len, 2 * diag_len)
-    #
-    #     # Initialize accumulator
-    #     accumulator = np.zeros((len(rhos), len(thetas)), dtype=np.uint64)
-    #     y_idxs, x_idxs = np.nonzero(edges)
-    #
-    #     # Vote in the accumulator
-    #     for y, x in zip(y_idxs, x_idxs):
-    #         for theta_idx, theta in enumerate(thetas):
-    #             rho = int(x * np.cos(theta) + y * np.sin(theta)) + diag_len
-    #             accumulator[rho, theta_idx] += 1
-    #
-    #     # Find peaks in the accumulator
-    #     lines = []
-    #     for rho_idx, theta_idx in zip(*np.where(accumulator > threshold)):
-    #         rho = rhos[rho_idx]
-    #         theta = thetas[theta_idx]
-    #         lines.append((rho, theta))
-    #
-    #     return lines
+    def detect_hough_ellipse(self, parameters : dict = None):
+        if self.modified_image is None:
+            print("Error: No image loaded hough.")
+            return
+
+        # Set up detection parameters
+        params = {
+            'minMajorAxis': 5,
+            'maxMajorAxis': 100,
+            'rotation': -360,
+            'rotationSpan': 360,
+            'minAspectRatio': 0.3,
+            'randomize': 5,
+            'numBest': 10,
+            'uniformWeights': True,
+            'smoothStddev': 1,
+            'max_points': 8000  # Limit the number of points to process
+        }
+        # if parameters is not None:
+        #     params.update(parameters)
+
+        # Use the modified image for detection
+        test_image = cv2.cvtColor(self.modified_image, cv2.COLOR_BGR2GRAY) if len(
+            self.modified_image.shape) == 3 else self.modified_image
+
+        # Run ellipse detection
+        ellipses = ellipse_detection(test_image, params, verbose=True)
+
+        # Print detected ellipses
+        print("\nDetected Ellipses:")
+        print("Center (x,y) | Major | Minor | Angle | Score")
+        print("-" * 50)
+        for i, ellipse in enumerate(ellipses):
+            if ellipse[5] > 0:  # Only print valid ellipses
+                print(
+                    f"Ellipse {i + 1}: ({ellipse[0]:.1f}, {ellipse[1]:.1f}) | {ellipse[2]:.1f} | {ellipse[3]:.1f} | {ellipse[4]:.1f}° | {ellipse[5]:.1f}")
+
+        # Visualize results
+        result_image = draw_ellipses(test_image, ellipses)
+
+        # Update the modified image with the result
+        self.modified_image = result_image
+        self.show_image()
 
     def hough_transform_test(self):
         img = self.modified_image
-        mask = cv2.imread("circle_mask.png", 0)
-        mask_binary = np.zeros(mask.shape, dtype=bool)
-        mask_binary[mask == 255] = True
-        mask_binary[mask != 255] = False
 
-        time1 = time.time()
-        test = FindEllipseRHT(img, mask_binary)
-        # plt.figure()
-        # plt.imshow(original_image)
-        # plt.show()
-        test.run(plot_mode=True, debug_mode=False)
-        time2 = time.time()
-        print("time consume: ", time2 - time1)
 
     def hough_transform_circles(self, edges, min_radius=10, max_radius=100, threshold=30):
         """Detect circles using Hough transform."""
@@ -310,6 +315,7 @@ class CannyEdgeDetection(QWidget):
     def canny_edge_detection(self):
         """Apply Canny edge detection algorithm and detect shapes."""
         if self.modified_image is None:
+            print("Error: No image loaded canny.")
             return
 
         # Store original image for overlay
@@ -351,7 +357,7 @@ class CannyEdgeDetection(QWidget):
         self.modified_image = result_image
         self.show_image()
 
-        return result_image
+        return
 
     def filter_lines(self, lines, rho_threshold=10, theta_threshold=0.1):
         """Filter detected lines to remove duplicates."""
