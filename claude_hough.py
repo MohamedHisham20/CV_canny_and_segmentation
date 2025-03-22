@@ -460,13 +460,16 @@ def detect_hough_lines(image, params=None):
     if params is None:
         params = {}
 
-    # Extract parameters with defaults
-    theta_res = params.get('theta_res', 0.5)
-    rho_res = params.get('rho_res', 1)
-    threshold = params.get('threshold', 50)
-    max_lines = params.get('max_lines', 15)
-    enhance_edges = params.get('enhance_edges', True)
-    show_accumulator = params.get('show_accumulator', False)
+    try:
+        # Extract parameters with defaults
+        theta_res = params.get('theta_res', 0.5)
+        rho_res = params.get('rho_res', 1)
+        threshold = params.get('threshold', 50)
+        max_lines = params.get('max_lines', 15)
+        enhance_edges = params.get('enhance_edges', True)
+        show_accumulator = params.get('show_accumulator', False)
+    except Exception as e:
+        print(e)
 
     if image is None:
         raise ValueError("Invalid image provided")
