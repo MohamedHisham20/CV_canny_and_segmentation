@@ -574,7 +574,7 @@ border:3px solid #D4D7D8;
      <rect>
       <x>1600</x>
       <y>790</y>
-      <width>241</width>
+      <width>201</width>
       <height>22</height>
      </rect>
     </property>
@@ -858,7 +858,7 @@ QPushButton:hover{
      <rect>
       <x>1190</x>
       <y>690</y>
-      <width>241</width>
+      <width>201</width>
       <height>22</height>
      </rect>
     </property>
@@ -911,7 +911,7 @@ QSlider::add-page:horizontal {
      <rect>
       <x>1190</x>
       <y>740</y>
-      <width>241</width>
+      <width>201</width>
       <height>22</height>
      </rect>
     </property>
@@ -961,7 +961,7 @@ QSlider::add-page:horizontal {
      <rect>
       <x>1190</x>
       <y>790</y>
-      <width>241</width>
+      <width>201</width>
       <height>22</height>
      </rect>
     </property>
@@ -1071,7 +1071,7 @@ font-weight:bold;</string>
      <rect>
       <x>1600</x>
       <y>740</y>
-      <width>241</width>
+      <width>201</width>
       <height>22</height>
      </rect>
     </property>
@@ -1154,6 +1154,101 @@ font-weight:bold;</string>
      <string>Low threshold</string>
     </property>
    </widget>
+   <widget class="QLabel" name="Gaussian">
+    <property name="geometry">
+     <rect>
+      <x>1400</x>
+      <y>690</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:#2B313B;
+color:#D4D7D8;
+font-size:15px;
+font-weight:bold;</string>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Sigma">
+    <property name="geometry">
+     <rect>
+      <x>1400</x>
+      <y>740</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:#2B313B;
+color:#D4D7D8;
+font-size:15px;
+font-weight:bold;</string>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Sobel">
+    <property name="geometry">
+     <rect>
+      <x>1400</x>
+      <y>790</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:#2B313B;
+color:#D4D7D8;
+font-size:15px;
+font-weight:bold;</string>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Lowthreshold">
+    <property name="geometry">
+     <rect>
+      <x>1810</x>
+      <y>740</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:#2B313B;
+color:#D4D7D8;
+font-size:15px;
+font-weight:bold;</string>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Highthreshold">
+    <property name="geometry">
+     <rect>
+      <x>1810</x>
+      <y>790</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:#2B313B;
+color:#D4D7D8;
+font-size:15px;
+font-weight:bold;</string>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
    <zorder>label</zorder>
    <zorder>label_2</zorder>
    <zorder>label_3</zorder>
@@ -1198,6 +1293,11 @@ font-weight:bold;</string>
    <zorder>LowThresholdHorizontalSlider</zorder>
    <zorder>label_20</zorder>
    <zorder>label_21</zorder>
+   <zorder>Gaussian</zorder>
+   <zorder>Sigma</zorder>
+   <zorder>Sobel</zorder>
+   <zorder>Lowthreshold</zorder>
+   <zorder>Highthreshold</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
