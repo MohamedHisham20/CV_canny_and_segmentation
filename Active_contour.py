@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QVBo
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt, QPoint
+from torch.nn.functional import threshold
+
 from post_contouring import PostContour
 from fpdf import FPDF
 from canny_and_hough import canny_edge_detection
@@ -28,9 +30,16 @@ class MainWindow(QMainWindow):
         self.CannyFilterButton.clicked.connect(self.canny_detection)
         self.SuperimposeButton.clicked.connect(self.hough_detection)
 
-        # self.EllipesFilterButton = self.findChild(QRadioButton, "EllipesFilterButton")
-        # self.CircleFilterButton = self.findChild(QRadioButton, "CircleFilterButton")
-        # self.LineFilterButton = self.findChild(QRadioButton, "LineFilterButton")
+        self.LowThresholdHorizontalSlider.setValue(5)  # divide by 100
+        self.LowThresholdHorizontalSlider.valueChanged.connect(self.update_low_threshold_label)
+        self.HighThresholdHorizontalSlider.setValue(15)
+        self.HighThresholdHorizontalSlider.valueChanged.connect(self.update_high_threshold_label)
+        self.GaussianHorizontalSlider.setValue(5)
+        self.GaussianHorizontalSlider.valueChanged.connect(self.update_gaussian_label)
+        self.SigmaHorizontalSlider.setValue(14) # divide by 10
+        self.SigmaHorizontalSlider.valueChanged.connect(self.update_sigma_label)
+        self.SobelHorizontalSlider.setValue(3)
+        self.SobelHorizontalSlider.valueChanged.connect(self.update_sobel_label)
 
         self.AlphaText.setText("0.1")
         self.BetaText.setText("0.1")
@@ -54,6 +63,21 @@ class MainWindow(QMainWindow):
         self.canny_image = None
 
         self.chain_points = []
+
+    def update_low_threshold_label(self):
+        self.Lowthreshold.setText(str(self.LowThresholdHorizontalSlider.value()))
+
+    def update_high_threshold_label(self):
+        self.Highthreshold.setText(str(self.HighThresholdHorizontalSlider.value()))
+
+    def update_gaussian_label(self):
+        self.Gaussian.setText(str(self.GaussianHorizontalSlider.value()))
+
+    def update_sigma_label(self):
+        self.Sigma.setText(str(self.SigmaHorizontalSlider.value() / 10))
+
+    def update_sobel_label(self):
+        self.Sobel.setText(str(self.SobelHorizontalSlider.value()))
 
     def create_contour_points(self):
         """Generate dynamic points for the circle and square."""
@@ -91,7 +115,12 @@ class MainWindow(QMainWindow):
         if self.image is None:
             print("Error: No image loaded.")
             return
-        self.canny_image = canny_edge_detection(self.image)
+        self.canny_image = canny_edge_detection(self.image,
+                                                gaussian_kernel_size=self.GaussianHorizontalSlider.value(),
+                                                sigma=self.SigmaHorizontalSlider.value() / 10,
+                                                low_threshold=self.LowThresholdHorizontalSlider.value(),
+                                                high_threshold=self.HighThresholdHorizontalSlider.value() ,
+                                                sobel_kernel_size=self.SobelHorizontalSlider.value())
         self.display_image(self.canny_image, self.OutputImage)
         self.output_image = self.canny_image
 

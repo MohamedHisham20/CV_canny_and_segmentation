@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-import general_functions as gf
-from claude_hough import ellipse_detection, draw_ellipses
+from matplotlib import pyplot as plt
 
+import general_functions as gf
 
 def show_image(widget):
     gf.show_image(widget)
@@ -35,7 +35,7 @@ def show_image(widget):
 #     return image
 
 
-def canny_edge_detection(image):
+def canny_edge_detection(image, gaussian_kernel_size=5, sigma=1.4, low_threshold=0.05, high_threshold=0.15, sobel_kernel_size=3):
     if image is None:
         print("Error: No image loaded for Canny.")
         return
@@ -44,16 +44,16 @@ def canny_edge_detection(image):
     grey_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY) if len(
         image.shape) == 3 else image
 
-    blurred_image = gaussian_blur(grey_image.astype(np.float64), 5, 1.4)
-    gradient_x, gradient_y = sobel_filters(blurred_image)
-    gradient_magnitude = np.sqrt(np.square(gradient_x) + np.square(gradient_y))
-    gradient_direction = np.arctan2(gradient_y, gradient_x)
-    gradient_magnitude = gradient_magnitude * 255.0 / (gradient_magnitude.max() or 1)
+    blurred_image = gaussian_blur(grey_image.astype(np.float64), gaussian_kernel_size, sigma)
+    gradient_x, gradient_y,image = sobel_filters(blurred_image, threshold=int(high_threshold), kernel_size=sobel_kernel_size)
+    # gradient_magnitude = np.sqrt(np.square(gradient_x) + np.square(gradient_y))
+    # gradient_direction = np.arctan2(gradient_y, gradient_x)
+    # gradient_magnitude = gradient_magnitude * 255.0 / (gradient_magnitude.max() or 1)
 
-    suppressed_edges = non_max_suppression(gradient_magnitude, gradient_direction)
-    final_edges = hysteresis_thresholding(suppressed_edges)
-
-    image = (final_edges * 255).astype(np.uint8)
+    # suppressed_edges = non_max_suppression(gradient_magnitude, gradient_direction)
+    # final_edges = hysteresis_thresholding(suppressed_edges, low_ratio=low_threshold, high_ratio=high_threshold)
+    #
+    # image = (final_edges * 255).astype(np.uint8)
     return image
 
 
@@ -74,20 +74,59 @@ def gaussian_blur(image, kernel_size=5, sigma=1.0):
     return output
 
 
-def sobel_filters(image):
-    kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-    kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+def sobel_filters(image, threshold=20, kernel_size=3):
+    """Apply Sobel edge detection from scratch with variable kernel size"""
+    # Get image dimensions
+    rows, cols = image.shape
 
-    padded = np.pad(image, ((1, 1), (1, 1)), mode='reflect')
-    gradient_x = np.zeros_like(image, dtype=np.float64)
-    gradient_y = np.zeros_like(image, dtype=np.float64)
+    # Create Sobel kernels based on kernel size
+    if kernel_size == 3:
+        Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+        Ky = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+    else:
+        # Generate larger Sobel-like kernels
+        # This is a simple approximation - more sophisticated kernels could be used
+        mid = kernel_size // 2
+        Kx = np.zeros((kernel_size, kernel_size))
+        Ky = np.zeros((kernel_size, kernel_size))
 
-    for i in range(image.shape[0]):
-        for j in range(image.shape[1]):
-            gradient_x[i, j] = np.sum(padded[i:i + 3, j:j + 3] * kernel_x)
-            gradient_y[i, j] = np.sum(padded[i:i + 3, j:j + 3] * kernel_y)
+        for i in range(kernel_size):
+            for j in range(kernel_size):
+                x_dist = j - mid
+                y_dist = i - mid
+                if x_dist != 0:
+                    Kx[i, j] = x_dist / abs(x_dist) * (mid - abs(y_dist)) if abs(y_dist) <= mid else 0
+                if y_dist != 0:
+                    Ky[i, j] = y_dist / abs(y_dist) * (mid - abs(x_dist)) if abs(x_dist) <= mid else 0
 
-    return gradient_x, gradient_y
+    # Initialize gradient images
+    Ix = np.zeros_like(image, dtype=np.float64)
+    Iy = np.zeros_like(image, dtype=np.float64)
+
+    # Apply convolution
+    pad = kernel_size // 2
+    padded_image = np.pad(image, pad, mode='constant')
+
+    for i in range(rows):
+        for j in range(cols):
+            region = padded_image[i:i + kernel_size, j:j + kernel_size]
+            Ix[i, j] = np.sum(region * Kx)
+            Iy[i, j] = np.sum(region * Ky)
+
+    # Calculate gradient magnitude
+    G = np.sqrt(Ix ** 2 + Iy ** 2)
+    G = np.clip(G, 0, 255).astype(np.uint8)
+
+    # Apply threshold and convert to binary
+    for i in range(rows):
+        for j in range(cols):
+            if G[i, j] < threshold:
+                G[i, j] = 0
+            else:
+                G[i, j] = 255
+
+
+    return Ix,Iy,G
 
 
 def non_max_suppression(magnitude, direction):
