@@ -10,6 +10,12 @@
     <height>843</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>2290</width>
+    <height>1080</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -462,7 +468,7 @@ QPushButton:hover{
    <widget class="QPushButton" name="SaveButton">
     <property name="geometry">
      <rect>
-      <x>1750</x>
+      <x>1760</x>
       <y>750</y>
       <width>101</width>
       <height>41</height>
@@ -519,7 +525,7 @@ border:3px solid #D4D7D8;
      <string>Lines</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="EllipesFilterButton">
+   <widget class="QRadioButton" name="EllipseFilterButton">
     <property name="geometry">
      <rect>
       <x>1470</x>
@@ -541,7 +547,7 @@ border:3px solid #D4D7D8;
  text-transform: uppercase;</string>
     </property>
     <property name="text">
-     <string>Ellipes</string>
+     <string>Ellipse</string>
     </property>
    </widget>
    <widget class="QRadioButton" name="CircleFilterButton">
@@ -572,7 +578,7 @@ border:3px solid #D4D7D8;
    <widget class="QSlider" name="ThresholdHorizontalSlider">
     <property name="geometry">
      <rect>
-      <x>1170</x>
+      <x>1150</x>
       <y>690</y>
       <width>261</width>
       <height>22</height>
@@ -610,7 +616,7 @@ QSlider::add-page:horizontal {
 </string>
     </property>
     <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+     <enum>Qt::Orientation::Horizontal</enum>
     </property>
    </widget>
    <widget class="QLabel" name="label_10">
@@ -635,8 +641,8 @@ font-weight:bold;</string>
    <widget class="QPushButton" name="SuperimposeButton">
     <property name="geometry">
      <rect>
-      <x>1600</x>
-      <y>700</y>
+      <x>1610</x>
+      <y>750</y>
       <width>141</width>
       <height>41</height>
      </rect>
@@ -761,7 +767,7 @@ border-right:2px solid #D4D7D8;</string>
    <widget class="QLabel" name="label_16">
     <property name="geometry">
      <rect>
-      <x>1560</x>
+      <x>1420</x>
       <y>670</y>
       <width>20</width>
       <height>121</height>
@@ -779,7 +785,7 @@ border-right:2px solid #D4D7D8;</string>
    <widget class="QPushButton" name="CannyFilterButton">
     <property name="geometry">
      <rect>
-      <x>1600</x>
+      <x>1460</x>
       <y>750</y>
       <width>141</width>
       <height>41</height>
@@ -870,7 +876,7 @@ QPushButton:hover{
    <zorder>CircleContourButton</zorder>
    <zorder>label_12</zorder>
    <zorder>LineFilterButton</zorder>
-   <zorder>EllipesFilterButton</zorder>
+   <zorder>EllipseFilterButton</zorder>
    <zorder>CircleFilterButton</zorder>
    <zorder>label_13</zorder>
    <zorder>label_14</zorder>

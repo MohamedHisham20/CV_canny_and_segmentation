@@ -4,37 +4,67 @@ import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import splprep, splev
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QVBoxLayout
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.uic import loadUi
-from PyQt5.QtCore import Qt, QPoint
+from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QVBoxLayout, QPushButton, QLineEdit, QRadioButton
+from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtCore import Qt, QPoint
 from post_contouring import PostContour
 from fpdf import FPDF
-import os
+from canny_and_hough import canny_edge_detection
+from claude_hough import detect_hough_lines, detect_hough_ellipse
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        loadUi("CV_Task02.ui", self)
 
-        # Connect buttons to their respective functions
+        # Load UI
+        loader = QUiLoader()
+        self.ui = loader.load("CV_Task02.ui")
+        self.ui.setParent(self)  # Ensure it integrates properly
+        self.setCentralWidget(self.ui)
+
+        # Assign UI elements
+        self.LoadImageButton = self.ui.findChild(QPushButton, "LoadImageButton")
+        self.SaveButton = self.ui.findChild(QPushButton, "SaveButton")
+        self.ResetButton = self.ui.findChild(QPushButton, "ResetButton")
+        self.CircleContourButton = self.ui.findChild(QRadioButton, "CircleContourButton")
+        self.SquareContourButton = self.ui.findChild(QRadioButton, "SquareContourButton")
+        self.ApplyContourButton = self.ui.findChild(QPushButton, "ApplyContourButton")
+        self.CannyFilterButton = self.ui.findChild(QPushButton, "CannyFilterButton")
+        self.SuperimposeButton = self.ui.findChild(QPushButton, "SuperimposeButton")
+        self.ChainCodeButton = self.ui.findChild(QPushButton, "ChainCodeButton")
+
+        self.AlphaText = self.ui.findChild(QLineEdit, "AlphaText")
+        self.BetaText = self.ui.findChild(QLineEdit, "BetaText")
+        self.GammaText = self.ui.findChild(QLineEdit, "GammaText")
+        self.IterationsText = self.ui.findChild(QLineEdit, "IterationsText")
+
+        self.InputImage = self.ui.findChild(QLabel, "InputImage")
+        self.OutputImage = self.ui.findChild(QLabel, "OutputImage")
+
+        self.EllipseFilterButton = self.ui.findChild(QRadioButton, "EllipseFilterButton")
+        self.CircleFilterButton = self.ui.findChild(QRadioButton, "CircleFilterButton")
+        self.LineFilterButton = self.ui.findChild(QRadioButton, "LineFilterButton")
+
+        # Connect buttons to functions
         self.LoadImageButton.clicked.connect(self.load_image)
         self.SaveButton.clicked.connect(self.save_image)
         self.ResetButton.clicked.connect(self.reset)
         self.CircleContourButton.clicked.connect(self.draw_initial_contour)
         self.SquareContourButton.clicked.connect(self.draw_initial_contour)
         self.ApplyContourButton.clicked.connect(self.active_contour)
-        
+        self.CannyFilterButton.clicked.connect(self.canny_detection)
+        self.SuperimposeButton.clicked.connect(self.hough_detection)
+        self.ChainCodeButton.clicked.connect(self.generate_contour_report)
 
+        # Initialize text fields
         self.AlphaText.setText("0.1")
         self.BetaText.setText("0.1")
         self.GammaText.setText("1.0")
         self.IterationsText.setText("100")
 
-        ### Chain_code related
-        self.ChainCodeButton.clicked.connect(self.generate_contour_report)
-
+        # Initialize variables
         self.image = None
         self.output_image = None
         self.contour_position = QPoint(200, 200)
@@ -45,15 +75,17 @@ class MainWindow(QMainWindow):
         self.dragging = False
         self.drag_offset = QPoint(0, 0)
         self.create_contour_points()
-        
+
         self.chain_points = []
 
+        self.show()
+
     def create_contour_points(self):
-        """Generate dynamic points for the circle and square"""
-        self.num_points = max(20, int(self.contour_size * 2))  # Adjust points dynamically
+        """Generate dynamic points for the circle and square."""
+        self.num_points = max(20, int(self.contour_size * 2))
         self.circle_points = []
         self.square_points = []
-        
+
         # Generate circle points
         for i in range(self.num_points):
             angle = (2 * np.pi * i) / self.num_points
@@ -79,6 +111,31 @@ class MainWindow(QMainWindow):
             x = self.contour_position.x() - self.contour_size
             y = self.contour_position.y() + self.contour_size - i * step
             self.square_points.append((int(x), int(y)))
+
+    def canny_detection(self):
+        if self.image is None:
+            print("Error: No image loaded.")
+            return
+        canny_image = canny_edge_detection(self.image)
+        self.display_image(canny_image, self.OutputImage)
+
+    def hough_detection(self):
+        if self.image is None:
+            print("Error: No image loaded.")
+            return
+
+        if self.EllipseFilterButton.isChecked():
+            hough_image = detect_hough_ellipse(self.image)
+        elif self.CircleFilterButton.isChecked():
+            hough_image = detect_hough_ellipse(self.image, shape='circle')
+        elif self.LineFilterButton.isChecked():
+            hough_image = detect_hough_lines(self.image)
+        else:
+            print("Error: Please select a filter type.")
+            return
+
+        self.display_image(hough_image, self.OutputImage)
+
 
     def draw_initial_contour(self):
         if self.image is None:
@@ -179,8 +236,6 @@ class MainWindow(QMainWindow):
         else:
             print("Error: No output image to save.")
 
-
-    
 
     def reset(self):
         self.image = None
@@ -362,4 +417,4 @@ if __name__ == "__main__":
     window.show()
     sys.exit(app.exec_())
 
-# Red point 111
+#

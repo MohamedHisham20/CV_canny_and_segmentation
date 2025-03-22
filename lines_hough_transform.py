@@ -123,18 +123,29 @@ def visualize_accumulator(accumulator, title="Hough Space"):
 
 
 # Main processing function
-def process_image(image_path, theta_res=1, rho_res=1, threshold=100, max_lines=20, show_accumulator=True):
-    # Read the image
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if image is None:
-        raise FileNotFoundError(f"Could not read image at {image_path}")
+def detect_hough_lines(image, params=None):
+    # # Read the image
+    # image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-    # # Apply edge detection
-    # edges = cv2.Canny(image, 50, 150, apertureSize=3)
+    if params is None:
+        params = {}
+
+    # Extract parameters with defaults
+    theta_res = params.get('theta_res', 0.5)
+    rho_res = params.get('rho_res', 1)
+    threshold = params.get('threshold', 50)
+    max_lines = params.get('max_lines', 15)
+    enhance_edges = params.get('enhance_edges', True)
+    show_accumulator = params.get('show_accumulator', False)
+
+    if image is None:
+        raise ValueError("Invalid image provided")
+
+    # enhance edges
     edges = image
-    # Optional: Apply morphological operations to enhance edges
-    kernel = np.ones((3, 3), np.uint8)
-    edges = cv2.dilate(edges, kernel, iterations=1)
+    if enhance_edges:
+        kernel = np.ones((3, 3), np.uint8)
+        edges = cv2.dilate(image, kernel, iterations=1)
 
     # Apply Hough transform
     accumulator, thetas, rhos = line_hough_transform(edges, theta_res, rho_res)
@@ -149,40 +160,40 @@ def process_image(image_path, theta_res=1, rho_res=1, threshold=100, max_lines=2
     # Draw lines on the original image
     result = draw_lines(image, lines, max_lines)
 
-    # Display results
-    plt.figure(figsize=(15, 10))
-
-    plt.subplot(131)
-    plt.imshow(image, cmap='gray')
-    plt.title('Original Image')
-    plt.axis('off')
-
-    plt.subplot(132)
-    plt.imshow(edges, cmap='gray')
-    plt.title('Edge Detection')
-    plt.axis('off')
-
-    plt.subplot(133)
-    plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
-    plt.title(f'Detected Lines (top {max_lines if max_lines else "all"})')
-    plt.axis('off')
-
-    plt.tight_layout()
-    plt.show()
+    # # Display results
+    # plt.figure(figsize=(15, 10))
+    #
+    # plt.subplot(131)
+    # plt.imshow(image, cmap='gray')
+    # plt.title('Original Image')
+    # plt.axis('off')
+    #
+    # plt.subplot(132)
+    # plt.imshow(edges, cmap='gray')
+    # plt.title('Edge Detection')
+    # plt.axis('off')
+    #
+    # plt.subplot(133)
+    # plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+    # plt.title(f'Detected Lines (top {max_lines if max_lines else "all"})')
+    # plt.axis('off')
+    #
+    # plt.tight_layout()
+    # plt.show()
 
     return result, lines
 
 
 # Example usage
-if __name__ == "__main__":
-    image_path = "images/vert_horz_lines_canna.png"
-    result, lines = process_image(
-        image_path,
-        theta_res=0.5,  # Higher angular resolution
-        rho_res=1,
-        threshold=50,  # Lower threshold to detect more lines
-        max_lines=15,
-        show_accumulator=True
-    )
-
-    print(f"Found {len(lines)} lines above threshold")
+# if __name__ == "__main__":
+#     image_path = "images/vert_horz_lines_canna.png"
+#     result, lines = process_image(
+#         image_path,
+#         theta_res=0.5,  # Higher angular resolution
+#         rho_res=1,
+#         threshold=50,  # Lower threshold to detect more lines
+#         max_lines=15,
+#         show_accumulator=True
+#     )
+#
+#     print(f"Found {len(lines)} lines above threshold")
