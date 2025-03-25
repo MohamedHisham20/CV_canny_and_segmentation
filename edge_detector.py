@@ -45,11 +45,18 @@ def canny_edge_detection(image, gaussian_kernel_size=5, sigma=1.4, low_threshold
         image.shape) == 3 else image
 
     blurred_image = gaussian_blur(grey_image.astype(np.float64), gaussian_kernel_size, sigma)
+    #method 1 : combine in one simple function parameter changes apply (only the following line)
     gradient_x, gradient_y,image = sobel_filters(blurred_image, threshold=int(high_threshold), kernel_size=sobel_kernel_size)
+
+    # method 2 : steps with no parameters (need the next steps)
+    # gradient_x, gradient_y = sobel_filters_old(blurred_image)
+
+    # method 3 : steps with parameters
+    # gradient_x, gradient_y = sobel_filter(blurred_image, kernel_size=sobel_kernel_size)
     # gradient_magnitude = np.sqrt(np.square(gradient_x) + np.square(gradient_y))
     # gradient_direction = np.arctan2(gradient_y, gradient_x)
     # gradient_magnitude = gradient_magnitude * 255.0 / (gradient_magnitude.max() or 1)
-
+    #
     # suppressed_edges = non_max_suppression(gradient_magnitude, gradient_direction)
     # final_edges = hysteresis_thresholding(suppressed_edges, low_ratio=low_threshold, high_ratio=high_threshold)
     #
@@ -73,9 +80,54 @@ def gaussian_blur(image, kernel_size=5, sigma=1.0):
 
     return output
 
+def sobel_filter(image, kernel_size=3):
+    # Get image dimensions
+    rows, cols = image.shape
+
+    if kernel_size % 2 == 0 or kernel_size < 3:
+        raise ValueError("Kernel size must be an odd number and greater than or equal to 3")
+
+
+    # Create Sobel kernels based on kernel size
+    if kernel_size == 3:
+        Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+        Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+        # Ky = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+    else:
+        # Generate larger Sobel-like kernels
+        # This is a simple approximation - more sophisticated kernels could be used
+        mid = kernel_size // 2
+        Kx = np.zeros((kernel_size, kernel_size))
+        Ky = np.zeros((kernel_size, kernel_size))
+
+        for i in range(kernel_size):
+            for j in range(kernel_size):
+                x_dist = j - mid
+                y_dist = i - mid
+                if x_dist != 0:
+                    Kx[i, j] = x_dist / abs(x_dist) * (mid - abs(y_dist)) if abs(y_dist) <= mid else 0
+                if y_dist != 0:
+                    Ky[i, j] = y_dist / abs(y_dist) * (mid - abs(x_dist)) if abs(x_dist) <= mid else 0
+
+    # Initialize gradient images
+    gradient_x = np.zeros_like(image, dtype=np.float64)
+    gradient_y = np.zeros_like(image, dtype=np.float64)
+
+    # changed padding
+    # pad = kernel_size // 2
+    # padded_image = np.pad(image, ((pad, pad), (pad, pad)), mode='reflect')
+    padded_image = np.pad(image, ((1, 1), (1, 1)), mode='reflect')
+
+    for i in range(rows):
+        for j in range(cols):
+            region = padded_image[i:i + kernel_size, j:j + kernel_size]
+            gradient_x[i, j] = np.sum(region * Kx)
+            gradient_y[i, j] = np.sum(region * Ky)
+
+    return gradient_x, gradient_y
 
 def sobel_filters(image, threshold=20, kernel_size=3):
-    """Apply Sobel edge detection from scratch with variable kernel size"""
+    """Apply Sobel edge detection with variable kernel size"""
     # Get image dimensions
     rows, cols = image.shape
 
@@ -128,6 +180,20 @@ def sobel_filters(image, threshold=20, kernel_size=3):
 
     return Ix,Iy,G
 
+
+def sobel_filters_old(image):
+    kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+
+    padded = np.pad(image, ((1, 1), (1, 1)), mode='reflect')
+    gradient_x = np.zeros_like(image, dtype=np.float64)
+    gradient_y = np.zeros_like(image, dtype=np.float64)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            gradient_x[i, j] = np.sum(padded[i:i + 3, j:j + 3] * kernel_x)
+            gradient_y[i, j] = np.sum(padded[i:i + 3, j:j + 3] * kernel_y)
+
+    return gradient_x, gradient_y
 
 def non_max_suppression(magnitude, direction):
     M, N = magnitude.shape

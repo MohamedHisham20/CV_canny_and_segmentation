@@ -12,8 +12,8 @@ from torch.nn.functional import threshold
 
 from post_contouring import PostContour
 from fpdf import FPDF
-from canny_and_hough import canny_edge_detection
-from claude_hough import detect_hough_lines, detect_hough_ellipse
+from edge_detector import canny_edge_detection
+from hough_transform import detect_hough_lines, detect_hough_ellipse
 
 
 class MainWindow(QMainWindow):
@@ -115,12 +115,25 @@ class MainWindow(QMainWindow):
         if self.image is None:
             print("Error: No image loaded.")
             return
+        #method 1
         self.canny_image = canny_edge_detection(self.image,
                                                 gaussian_kernel_size=self.GaussianHorizontalSlider.value(),
                                                 sigma=self.SigmaHorizontalSlider.value() / 10,
                                                 low_threshold=self.LowThresholdHorizontalSlider.value(),
                                                 high_threshold=self.HighThresholdHorizontalSlider.value() ,
                                                 sobel_kernel_size=self.SobelHorizontalSlider.value())
+
+        # method 2
+        # self.canny_image = canny_edge_detection(image=self.image)
+
+        # method 3
+        # self.canny_image = canny_edge_detection(self.image,
+        #                                         gaussian_kernel_size=self.GaussianHorizontalSlider.value(),
+        #                                         sigma=self.SigmaHorizontalSlider.value() / 10,
+        #                                         low_threshold=self.LowThresholdHorizontalSlider.value() / 100,
+        #                                         high_threshold=self.HighThresholdHorizontalSlider.value() / 100,
+        #                                         sobel_kernel_size=self.SobelHorizontalSlider.value())
+
         self.display_image(self.canny_image, self.OutputImage)
         self.output_image = self.canny_image
 
